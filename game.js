@@ -51,7 +51,8 @@ class Game {
         // SDK loading Bridge logic wait
         const bridgeOk = await window.__seesoReady;
         if (!bridgeOk) {
-            document.getElementById('status-text').innerHTML = 'Init Fail:<br/>Failed to load module (CORS/file://)';
+            const errDetail = window.__seesoError || 'unknown';
+            document.getElementById('status-text').innerHTML = `Init Fail:<br/>Module load: ${errDetail}`;
             return;
         }
 

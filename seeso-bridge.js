@@ -16,6 +16,7 @@ window.__seesoReady = (async () => {
         });
         return true;
     } catch (e) {
+        window.__seesoError = e.message || String(e);
         MemoryLogger.error('BRIDGE', 'Failed to load easy-seeso.js', { msg: e.message });
         return false;
     }

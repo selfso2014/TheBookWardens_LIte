@@ -1,0 +1,79 @@
+body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+.game-section {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.game-section.active {
+    display: flex;
+}
+
+button {
+    background-color: #5C6BC0;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+#cal-dot {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #f44336;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 10px #f44336; }
+    to { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 20px #f44336; }
+}
+
+#gaze-dot {
+    position: absolute;
+    top: 0; left: 0; /* Updated via translate3d for max perf */
+    width: 20px;
+    height: 20px;
+    background-color: rgba(0, 255, 0, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+}
+
+.hud {
+    position: absolute;
+    top: 10px; left: 10px;
+    font-size: 14px;
+    color: #4CAF50;
+}
+
+#status-text {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}

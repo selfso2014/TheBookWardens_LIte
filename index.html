@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Book Wardens Lite - Eye Tracking</title>
+    <script src="coi-serviceworker.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="hud" id="debug-fps">FPS: 0</div>
+
+    <!-- Idle Screen -->
+    <section id="section-idle" class="game-section active">
+        <h1>Book Wardens</h1>
+        <button id="btn-start">Start</button>
+    </section>
+
+    <!-- SDK Loading Screen -->
+    <section id="section-loading" class="game-section">
+        <div id="status-text">Loading...</div>
+    </section>
+
+    <!-- Calibration Screen -->
+    <section id="section-calibration" class="game-section">
+        <h2 id="cal-progress" style="display:none; position:absolute; top:20%;">Look at the red dot</h2>
+        <div id="cal-dot"></div>
+    </section>
+
+    <!-- Reading Screen (Gameplay) -->
+    <section id="section-reading" class="game-section">
+        <h1>Game Started</h1>
+    </section>
+
+    <!-- Global Gaze Dot indicator -->
+    <div id="gaze-dot"></div>
+
+    <!-- Scripts -->
+    <script src="memory-logger.js"></script>
+    <script src="seeso-bridge.js"></script>
+    <script src="seeso-manager.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>

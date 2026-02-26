@@ -76,7 +76,7 @@ class SeesoManager {
             }, 30000);
 
             try {
-                this._seeso = new EasySeeso();
+                this._seeso = new window.EasySeeSo();
                 window.__seeso = this._seeso; // 디버그용 전역 참조
 
                 this._seeso.init(

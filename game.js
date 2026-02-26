@@ -60,10 +60,9 @@ class Game {
             return;
         }
 
-        const initResult = await this.seesoMgr.initSDK();
-        if (!initResult || !initResult.success) {
-            const err = initResult?.error || 'unknown';
-            document.getElementById('status-text').innerHTML = `Init Fail:<br/>${err}`;
+        const sdkOk = await this.seesoMgr.initSDK();
+        if (!sdkOk) {
+            document.getElementById('status-text').innerHTML = 'Init Fail:<br/>SDK initialization failed';
             return;
         }
 

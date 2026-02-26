@@ -1,4 +1,4 @@
-import Seeso, { InitializationErrorType, CalibrationAccuracyCriteria } from './dist/seeso';
+import Seeso, { InitializationErrorType, CalibrationAccuracyCriteria } from './dist/seeso.js';
 
 class EasySeeso {
   constructor() {

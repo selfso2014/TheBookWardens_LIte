@@ -1,4 +1,4 @@
-import Seeso, { InitializationErrorType, CalibrationAccuracyCriteria } from './dist/seeso.js';
+import Seeso, { InitializationErrorType, CalibrationAccuracyCriteria } from './dist/seeso';
 
 class EasySeeso {
   constructor() {
@@ -28,8 +28,7 @@ class EasySeeso {
         this.onGazeBind = this.onGaze_.bind(this);
         this.seeso.addGazeCallback(this.onGazeBind);
       } else {
-        console.error('SeeSo Init Failed with code:', errCode);
-        afterFailed(errCode);
+        afterFailed();
       }
     }.bind(this));
   }
@@ -43,7 +42,27 @@ class EasySeeso {
   }
 
   async startTracking(onGaze, onDebug) {
-    const stream = await navigator.mediaDevices.getUserMedia({ 'video': true });
+    // [FIX-iOS] 전면 카메라 + 해상도 제한 (iPhone 후면 카메라 / 12MP 방지)
+    // {'video': true}는 iOS에서 후면 카메라 or 최대 해상도 → WASM 검은 프레임
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const videoConstraints = isIOS ? {
+      facingMode: { ideal: 'user' },   // 전면 카메라 우선 (eye tracking 필수)
+      width: { ideal: 640, max: 1280 }, // 해상도 제한 → WASM 처리 가능
+      height: { ideal: 480, max: 720 },
+      frameRate: { max: 30 }             // 30fps 이하 제한
+    } : { facingMode: 'user' };          // PC도 전면 카메라 명시
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+
+    // [FIX-iOS] SDK video element에 playsinline 강제 추가
+    // playsinline 없으면 iOS Safari가 fullscreen 시도 → grabFrame 검은 프레임
+    if (isIOS) {
+      stream.getVideoTracks().forEach(track => {
+        const settings = track.getSettings();
+        console.log('[EasySeeso] Camera:', settings.facingMode, settings.width + 'x' + settings.height, settings.frameRate + 'fps');
+      });
+    }
+
     this.seeso.addDebugCallback(onDebug);
     if (this.seeso.startTracking(stream)) {
       this.onGaze = onGaze;
@@ -54,6 +73,7 @@ class EasySeeso {
       return false;
     }
   }
+
 
   stopTracking() {
     this.seeso.stopTracking();
@@ -220,4 +240,3 @@ class EasySeeso {
 }
 
 export default EasySeeso;
-window.EasySeeSo = EasySeeso;

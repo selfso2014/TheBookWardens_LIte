@@ -70,13 +70,6 @@ class EasySeeso {
     if (this.seeso.startTracking(stream)) {
       this.onGaze = onGaze;
       this.onDebug = onDebug;
-
-      // [PATCH-iOS] Reduce FPS on iOS to lower memory pressure
-      // 30FPS → 15FPS: halves ImageBitmap/ImageData allocation rate
-      if (isIOS) {
-        this.seeso.setTrackingFps(15);
-        console.log('[EasySeeso] iOS: FPS reduced to 15 for memory safety');
-      }
       return true;
     } else {
       this.seeso.removeDebugCallback(this.onDebug);
@@ -249,12 +242,24 @@ class EasySeeso {
 
     // Shadow the prototype method with an instance method that adds bitmap.close()
     seeso.convertBitmapToBlob_ = function (bitmap) {
+      // Save dimensions BEFORE close() — close() sets them to 0
+      const w = bitmap.width;
+      const h = bitmap.height;
+
       const result = origConvert.call(this, bitmap);
 
       // Release GPU memory immediately — this is the core fix
       if (bitmap && typeof bitmap.close === 'function') {
         bitmap.close();
       }
+
+      // Restore width/height as own properties so that
+      // processFrame_'s subsequent bitmap.width/height reads still work
+      // (SDK's addFrame ccall needs these after convertBitmapToBlob_ returns)
+      try {
+        Object.defineProperty(bitmap, 'width', { value: w, configurable: true });
+        Object.defineProperty(bitmap, 'height', { value: h, configurable: true });
+      } catch (e) { /* ignore if readonly */ }
 
       return result;
     };

@@ -59,6 +59,7 @@ class SeesoManager {
 
         this._setState('sdk', 'loading');
         MemoryLogger.snapshot('SDK_INIT_START');
+        CrashMonitor.mark('SDK:init_start');
 
         // 라이선스 키: prod(github.io) / dev(그 외)
         const LICENSE_KEY = window.location.hostname === 'selfso2014.github.io'
@@ -87,12 +88,14 @@ class SeesoManager {
                         this._initialized = true;
                         this._setState('sdk', 'initialized');
                         MemoryLogger.snapshot('SDK_INIT_DONE');
+                        CrashMonitor.mark('SDK:init_success');
                         resolve(true);
                     },
                     () => {
                         // afterFailed
                         clearTimeout(timeout);
                         MemoryLogger.error('SDK', 'EasySeeso.init → afterFailed (license or WASM error)');
+                        CrashMonitor.mark('SDK:init_FAILED');
                         this._setState('sdk', 'failed');
                         resolve(false);
                     }
@@ -130,6 +133,7 @@ class SeesoManager {
 
         this._setState('tracking', 'starting');
         MemoryLogger.snapshot('TRACKING_START');
+        CrashMonitor.mark('SDK:tracking_start');
 
         try {
             // 공식 방법: 2인자 (stream 전달 없음)
@@ -138,6 +142,7 @@ class SeesoManager {
             MemoryLogger.info('TRACK', `startTracking resolved: ${ok}`);
             this._tracking = ok;
             this._setState('tracking', ok ? 'running' : 'failed');
+            CrashMonitor.mark('SDK:tracking_result=' + ok);
             if (ok) MemoryLogger.snapshot('TRACKING_RUNNING');
             return ok;
         } catch (e) {
@@ -156,6 +161,7 @@ class SeesoManager {
 
         this._setState('cal', 'running');
         MemoryLogger.snapshot('CAL_START');
+        CrashMonitor.mark('SDK:calibration_start');
 
         const ok = this._seeso.startCalibration(
             (x, y) => {
@@ -176,6 +182,7 @@ class SeesoManager {
             (calibrationData) => {
                 MemoryLogger.info('CAL', 'Calibration finished!');
                 MemoryLogger.snapshot('CAL_DONE');
+                CrashMonitor.mark('SDK:calibration_done');
                 this._setState('cal', 'done');
                 if (onFinished) onFinished(calibrationData);
             },

@@ -46,6 +46,7 @@ class Game {
 
     async start() {
         MemoryLogger.info('GAME', '=== Start Sequence Initiated ===');
+        CrashMonitor.mark('GAME:start_sequence');
         await this.setState('SDK_INIT');
 
         // SDK loading Bridge logic wait
@@ -61,12 +62,15 @@ class Game {
             return;
         }
 
+        CrashMonitor.mark('GAME:sdk_init_begin');
         const sdkOk = await this.seesoMgr.initSDK();
+        CrashMonitor.mark('GAME:sdk_init_result=' + sdkOk);
         if (!sdkOk) {
             document.getElementById('status-text').innerHTML = 'Init Fail:<br/>SDK initialization failed';
             return;
         }
 
+        CrashMonitor.mark('GAME:tracking_begin');
         const trackOk = await this.seesoMgr.startTracking(
             (gazeInfo) => this._onGaze(gazeInfo),
             (fps) => {
@@ -74,6 +78,7 @@ class Game {
             }
         );
 
+        CrashMonitor.mark('GAME:tracking_result=' + trackOk);
         if (!trackOk) {
             document.getElementById('status-text').textContent = 'Cam Fail';
             return;
@@ -84,6 +89,7 @@ class Game {
     }
 
     startCalibration() {
+        CrashMonitor.mark('GAME:calibration_begin');
         this.setState('CALIBRATION');
 
         const calDot = document.getElementById('cal-dot');
@@ -110,6 +116,7 @@ class Game {
     }
 
     startGameplay() {
+        CrashMonitor.mark('GAME:gameplay_started');
         this.setState('READING');
         MemoryLogger.info('GAME', 'Gameplay started');
     }

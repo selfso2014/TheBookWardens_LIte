@@ -27,6 +27,9 @@ class EasySeeso {
         this.seeso.addCalibrationFinishCallback(this.onCalibrationFinishedBind);
         this.onGazeBind = this.onGaze_.bind(this);
         this.seeso.addGazeCallback(this.onGazeBind);
+
+        // [PATCH-iOS] Apply bitmap.close() patch to prevent GPU memory leak
+        this._patchBitmapClose();
       } else {
         afterFailed();
       }
@@ -67,6 +70,13 @@ class EasySeeso {
     if (this.seeso.startTracking(stream)) {
       this.onGaze = onGaze;
       this.onDebug = onDebug;
+
+      // [PATCH-iOS] Reduce FPS on iOS to lower memory pressure
+      // 30FPS → 15FPS: halves ImageBitmap/ImageData allocation rate
+      if (isIOS) {
+        this.seeso.setTrackingFps(15);
+        console.log('[EasySeeso] iOS: FPS reduced to 15 for memory safety');
+      }
       return true;
     } else {
       this.seeso.removeDebugCallback(this.onDebug);
@@ -209,6 +219,47 @@ class EasySeeso {
 
   getAttentionScore() {
     return this.seeso.getAttentionScore();
+  }
+
+  /**
+   * [PATCH-iOS] Monkey-patch SDK internal convertBitmapToBlob_ to call bitmap.close()
+   *
+   * Problem: SDK's processFrame_() calls grabFrame() which returns an ImageBitmap,
+   * then convertBitmapToBlob_() draws it to canvas and extracts ImageData.
+   * But the ImageBitmap is never .close()'d, causing GPU memory to accumulate
+   * until iOS kills the WebKit process (~60-80s at 30FPS).
+   *
+   * Fix: After convertBitmapToBlob_ finishes (bitmap is no longer needed),
+   * immediately call bitmap.close() to release GPU memory.
+   * @private
+   */
+  _patchBitmapClose() {
+    const seeso = this.seeso;
+    if (!seeso) {
+      console.warn('[EasySeeso] _patchBitmapClose: seeso instance not found');
+      return;
+    }
+
+    // Get the original method (from prototype)
+    const origConvert = seeso.convertBitmapToBlob_;
+    if (typeof origConvert !== 'function') {
+      console.warn('[EasySeeso] _patchBitmapClose: convertBitmapToBlob_ not found on SDK');
+      return;
+    }
+
+    // Shadow the prototype method with an instance method that adds bitmap.close()
+    seeso.convertBitmapToBlob_ = function (bitmap) {
+      const result = origConvert.call(this, bitmap);
+
+      // Release GPU memory immediately — this is the core fix
+      if (bitmap && typeof bitmap.close === 'function') {
+        bitmap.close();
+      }
+
+      return result;
+    };
+
+    console.log('[EasySeeso] ✅ bitmap.close() patch applied — GPU memory leak fixed');
   }
 
   static getVersionName() {

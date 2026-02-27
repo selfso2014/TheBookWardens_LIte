@@ -5,6 +5,8 @@
  * All texts strictly in English.
  */
 
+const APP_VERSION = 'v1.1.0';
+const BUILD_TIME = '2026-02-27T17:12+09';
 const MAX_GAZE_ENTRIES = 1800; // 60s @ 30Hz
 
 class Game {
@@ -20,6 +22,11 @@ class Game {
         this._gCount = 0;
 
         this._gazeDot = document.getElementById('gaze-dot');
+
+        // Log version at construction
+        console.log(`[BookWardens Lite] ${APP_VERSION} | Build: ${BUILD_TIME}`);
+        MemoryLogger.info('APP', `${APP_VERSION} | Build: ${BUILD_TIME}`);
+        if (window.CrashMonitor) CrashMonitor.mark(`VER:${APP_VERSION}_${BUILD_TIME}`);
     }
 
     async setState(newState) {
@@ -45,7 +52,7 @@ class Game {
     }
 
     async start() {
-        MemoryLogger.info('GAME', '=== Start Sequence Initiated ===');
+        MemoryLogger.info('GAME', `=== Start Sequence [${APP_VERSION}] ===`);
         CrashMonitor.mark('GAME:start_sequence');
         await this.setState('SDK_INIT');
 

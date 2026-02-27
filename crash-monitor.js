@@ -65,7 +65,7 @@
                 iso: new Date().toISOString(),
                 uptime: Math.round(performance.now()),
                 state: window.gameApp ? window.gameApp.state : 'NO_GAME',
-                gazeCount: window.gameApp ? window.gameApp._gCount : 0,
+                gazeCount: window.gameApp ? window.gameApp._totalGaze : 0,
                 memMB: _lastMemoryMB,
                 memSupported: _memorySupported,
                 url: location.href,
@@ -202,7 +202,7 @@
         if (!_hud) return;
         const upSec = (performance.now() / 1000).toFixed(0);
         const state = window.gameApp ? window.gameApp.state : '-';
-        const gaze = window.gameApp ? window.gameApp._gCount : 0;
+        const gaze = window.gameApp ? window.gameApp._totalGaze : 0;
         const evts = _timeline.length;
 
         const lines = [
@@ -296,7 +296,7 @@
             return {
                 uptime: Math.round(performance.now()),
                 state: window.gameApp ? window.gameApp.state : 'NO_GAME',
-                gazeCount: window.gameApp ? window.gameApp._gCount : 0,
+                gazeCount: window.gameApp ? window.gameApp._totalGaze : 0,
                 memMB: _lastMemoryMB,
                 timelineLength: _timeline.length
             };

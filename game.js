@@ -5,8 +5,8 @@
  * All texts strictly in English.
  */
 
-const APP_VERSION = 'v1.1.0';
-const BUILD_TIME = '2026-02-27T17:12+09';
+const APP_VERSION = 'v1.3.0';
+const BUILD_TIME = '2026-02-27T17:33+09';
 const MAX_GAZE_ENTRIES = 1800; // 60s @ 30Hz
 
 class Game {
@@ -20,6 +20,7 @@ class Game {
         this._gt = new Uint32Array(MAX_GAZE_ENTRIES);
         this._gIdx = 0;
         this._gCount = 0;
+        this._totalGaze = 0;  // Uncapped total gaze event counter
 
         this._gazeDot = document.getElementById('gaze-dot');
 
@@ -126,6 +127,9 @@ class Game {
         CrashMonitor.mark('GAME:gameplay_started');
         this.setState('READING');
         MemoryLogger.info('GAME', 'Gameplay started');
+
+        // [iOS-FIX] Start periodic SDK restart to prevent memory crash
+        this.seesoMgr.startAutoRestart();
     }
 
     _onGaze(gazeInfo) {
@@ -136,6 +140,7 @@ class Game {
 
         this._gIdx = (this._gIdx + 1) % MAX_GAZE_ENTRIES;
         if (this._gCount < MAX_GAZE_ENTRIES) this._gCount++;
+        this._totalGaze++;
 
         // Draw debug dot (requestAnimationFrame ideally)
         if (this._gazeDot) {
